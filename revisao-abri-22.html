@@ -1,0 +1,899 @@
+<!-- created with La Vouivre Â©2006 Fabien Olivry - Snakes and Ladders script by Birgit Ferran   -->
+<html>
+<head>
+<title>Revisão de IB</title>
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-15">
+<style type="text/css">
+#one {position: absolute; left:35px; top:520px; visibility:hidden; z-index:2}
+#two {position: absolute; left:60px; top:520px; visibility:hidden; z-index:2}
+#three {position: absolute; left:35px; top:495px; visibility:hidden; z-index:2}
+#four {position: absolute; left:60px; top:495px; visibility:hidden; z-index:2}
+#board   {position: absolute; left:20px; top:20px; visibility:visible; z-index:1}
+#dice    {position: absolute; left:530px; top:400px; width:200px; visibility:hidden; z-index:1}
+#questions{position: absolute; left:530px; top:190px; width:200px; visibility:visible; z-index:2; padding:6; font-family: Arial, Helvetica, sans-serif; font-size: 12px; font-weight: bold; color: #000000; border-width:4; border-style:ridge; border-color:#c0c0c0}
+#players {position: absolute; left:530px; top:120px; width:200px; visibility:visible; z-index:2; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: bold; color: #000000}
+#instructions{position: absolute; left:100px; top:100px; width:500px; visibility:visible; z-index:3; padding:10; font-family: Arial, Helvetica, sans-serif; font-size: 14px; font-weight: bold; color: #000000; border-width:4; border-style:ridge; border-color:#c0c0c0; background:white;}
+</style>
+<script language="JavaScript" SRC="questions.js"></SCRIPT>
+<script language="JavaScript">
+
+//Snakes and Ladders script by Birgit Ferran (birgit@eoiweb.com) More scripts for creating interactive language learning activities can be found on the web at http://www.eoiweb.com/EoiTeach 
+//Please feel free to use and adapt this script but please leave this message intact. A link to EoiTeach would also be appreciated.
+//If you would like to share the activities you have created with other teachers, please send me an email with the URL of your activity.
+
+var lastQuestion1 = 'Quase,   '; //player's name will go here
+var lastQuestion2 = '.  Só falta uma pergunta para ganhar!  ';
+var winner1 = 'Parabéns, '; //player's name will go here
+var winner2 = '! Ganhou o jogo!  \n Parabéns, '; //Please leave in the \n. It will put the text that follows on a new line.
+var anotherTurn = 'Pode jogar novamente,  '; //player's name will go here
+var wellDone = 'Bravo, '; //player's name will go here
+var pleaseAnswer = 'Tem de responder à pergunta,  '; //player's name will go here
+var sorryMsg = 'Que pena! A resposta correta era: \n '; //your feedback will go here. (Please leave in the \n. It will put the text that follows on a new line.)
+var howMany = 'Quantos jogadores?';
+var ask4Name = 'Escreva o seu nome , ';
+var instructions='<h3 align="center">INSTRUÇÕES</h3>';
+instructions +='<p>Para jogar, deve escolher a resposta certa</p>';
+instructions +='<ul><li>Seleccione o número de jogadores que vão jogar.</li>';
+instructions +='<li>Lance o dado e responda à pergunta.</li>';
+instructions +='<li>Se a resposta estiver errada, volta à casa de onde saiu.</li>';
+instructions +='<li>Se estiver na ponta da escada e responder corretamente, sobe. Se responder errado, desce.</li>';
+instructions +='<li>Se estiver no alto da serpente e responder errado, desce.</li>';
+instructions +='<li>Se cair numa das casas marcadas (Sol ou Serpente) e responder corretamente, pode jogar outra vez; caso contrário, volta à casa 1.</li>';
+instructions +='<li>O primeiro jogador a chegar à casa 64 e responder corretamente, ganha o jogo.</li></ul>';
+instructions +='<form>';
+instructions +='<p align="center">BOA SORTE!<br>DIVIRTA-SE!';
+var instructions='<h3 align="center">INSTRUÇÕES</h3>';
+instructions +='<p>Para jogar, deve escolher a resposta certa</p>';
+instructions +='<ul><li>Seleccione o número de jogadores que vão jogar.</li>';
+instructions +='<li>Lance o dado e responda à pergunta.</li>';
+instructions +='<li>Se a resposta estiver errada, volta à casa de onde saiu.</li>';
+instructions +='<li>Se estiver na ponta da escada e responder corretamente, sobe. Se responder errado, desce.</li>';
+instructions +='<li>Se estiver no alto da serpente e responder errado, desce.</li>';
+instructions +='<li>Se cair numa das casas marcadas (Sol ou Serpente) e responder corretamente, pode jogar outra vez; caso contrário, volta à casa 1.</li>';
+instructions +='<li>O primeiro jogador a chegar à casa 64 e responder corretamente, ganha o jogo.</li></ul>';
+instructions +='<form>';
+instructions +='<p align="center">BOA SORTE!<br>DIVIRTA-SE!';
+
+var player = 'Jogador';
+var players = 'Jogadores';
+var currentPlayerHeading = 'Jogador atual:';
+var rollingDice = 'Aguarde...';
+var pleaseRoll = 'Lance o dado';
+var startGame = 'Iniciar o jogo';
+var seeInstructions = 'Ler as instruções';
+
+
+
+
+var ie = (document.all)?true:false;
+var ns4 = (document.layers)?true:false;
+var ns6 = ((document.getElementById)?true:false) && !ie;
+
+function refPlayer(name){
+if (ie) {return eval('document.all.'+name+'.style');}
+if (ns4) {return document.layers[name];}
+if (ns6 && !ie) {return eval('document.getElementById("'+name+'").style');}
+}
+
+function capaON(name){
+refPlayer(name).visibility = 'visible';
+}
+
+function capaOFF(name){
+refPlayer(name).visibility = 'hidden';
+}
+
+function writetolayer(name,txt) {
+if (ie) {
+document.all[name].innerHTML = txt;
+}
+if (ns4) {
+document[name].document.write(txt);
+document[name].document.close();
+}
+if (ns6) {
+over = document.getElementById([name]);
+range = document.createRange();
+range.setStartBefore(over);
+domfrag = range.createContextualFragment(txt);
+while (over.hasChildNodes()) {
+over.removeChild(over.lastChild);
+}
+over.appendChild(domfrag);
+}
+}
+
+//Global variables
+
+var p1x=35;
+var p1y=520;
+var p2x=60;
+var p2y=520;
+var p3x=35;
+var p3y=495;
+var p4x=60;
+var p4y=495;
+
+var d1;
+var headback;
+var ctr=0;
+var goOnMoving=true;
+var possibleWinner=false;
+
+var qIdx	= 0;
+var nextQ	= '';
+var answered;
+var numPlayers = 1;
+var nextPlayer=false;
+
+var Player1='';
+var Player2='';
+var Player3='';
+var Player4='';
+
+//Function which defines which layer is moved where
+
+function whichX(){
+if(currentPlayer=="one"){return p1x}
+if(currentPlayer=="two"){return p2x}
+if(currentPlayer=="three"){return p3x}
+if(currentPlayer=="four"){return p4x}
+}
+
+function whichY(){
+if(currentPlayer=="one"){return p1y}
+if(currentPlayer=="two"){return p2y}
+if(currentPlayer=="three"){return p3y}
+if(currentPlayer=="four"){return p4y}
+}
+
+function showPlayer(name){
+refPlayer(name).left = whichX();
+refPlayer(name).top = whichY();
+}
+
+function mouCapa(){
+var currenty=whichY();
+if(currenty==520||currenty==400||currenty==280||currenty==160||currenty==495||currenty==375||currenty==255||currenty==135)
+mouCapaRight()
+else
+mouCapaLeft()
+}
+
+function mouCapaRight(){
+var currentx=whichX();
+if(currentx<455){
+moveforward();
+}
+else{
+moveup();
+}
+showPlayer(currentPlayer);
+d1--;
+if(d1>0){
+setTimeout("mouCapa()", 150);
+}
+else{
+buildQuestion();
+}
+}
+
+function mouCapaLeft(){
+var currentx=whichX();
+var currenty=whichY();
+if(currenty==100||currenty==75)
+{if(currentx==95||currentx==120)
+{writetolayer('questions',lastQuestion1 + who() + lastQuestion2)
+d1=0;
+possibleWinner=true;
+}
+}
+if(currentx>94){
+moveback();
+}
+else{
+moveup();
+}
+showPlayer(currentPlayer);
+d1--;
+if(d1>0){
+setTimeout("mouCapa()", 150);
+}
+else{
+buildQuestion();
+}
+}
+
+function moveforward(){
+switch (currentPlayer){
+case "one":
+p1x += 60;
+break;
+case "two":
+p2x += 60;
+break;
+case "three":
+p3x += 60;
+break;
+case "four":
+p4x += 60;
+break;
+}
+}
+
+function moveback(){
+switch (currentPlayer){
+case "one":
+p1x -= 60;
+break;
+case "two":
+p2x -= 60;
+break;
+case "three":
+p3x -= 60;
+break;
+case "four":
+p4x -= 60;
+break;
+}
+}
+
+function movedown(){
+switch (currentPlayer){
+case "one":
+p1y += 60;
+break;
+case "two":
+p2y += 60;
+break;
+case "three":
+p3y += 60;
+break;
+case "four":
+p4y += 60;
+break;
+}
+}
+
+function moveup(){
+switch (currentPlayer){
+case "one":
+p1y -= 60;
+break;
+case "two":
+p2y -= 60;
+break;
+case "three":
+p3y -= 60;
+break;
+case "four":
+p4y -= 60;
+break;
+}
+}
+
+//When the student answers a question correctly
+
+function ladders(){
+if(possibleWinner==true)
+{var newGame = confirm(winner1 + who() + winner2);
+if(newGame == true) location.reload();}
+var currentx=whichX();
+var currenty=whichY();
+if(currentx==155||currentx==180){
+if(currenty==520||currenty==495){
+ladderOne();
+}
+}
+if(currentx==455||currentx==480){
+if(currenty==400||currenty==375){
+ladderTwo();
+}
+}
+if(currentx==215||currentx==240){
+if(currenty==340||currenty==315){
+ladderThree();
+}
+}
+if(currentx==35||currentx==60){
+if(currenty==220||currenty==195){
+ladderFour();
+}
+}
+if(currentx==35||currentx==60){
+if(currenty==460||currenty==435){
+extraTurn();
+}
+}
+if(currentx==335||currentx==360){
+if(currenty==100||currenty==75){
+extraTurn();
+}
+}
+if(currentx==335||currentx==360){
+if(currenty==220||currenty==195){
+extraTurn();
+}
+}
+if(currentx==215||currentx==240){
+if(currenty==160||currenty==135){
+extraTurn();
+}
+}
+stayPut();
+}
+
+function ladderOne(){
+switch (currentPlayer){
+case "one":
+p1x=95;
+p1y=400;
+break;
+case "two":
+p2x=120;
+p2y=400;
+break;
+case "three":
+p3x=95;
+p3y=375;
+break;
+case "four":
+p4x=120;
+p4y=375;
+break;
+}
+}
+
+function ladderTwo(){
+switch (currentPlayer){
+case "one":
+p1x=395;
+p1y=280;
+break;
+case "two":
+p2x=420;
+p2y=280;
+break;
+case "three":
+p3x=395;
+p3y=255;
+break;
+case "four":
+p4x=420;
+p4y=255;
+break;
+}
+}
+
+function ladderThree(){
+switch (currentPlayer){
+case "one":
+p1x=275;
+p1y=160;
+break;
+case "two":
+p2x=300;
+p2y=160;
+break;
+case "three":
+p3x=275;
+p3y=135;
+break;
+case "four":
+p4x=300;
+p4y=135;
+break;
+}
+}
+
+function ladderFour(){
+switch (currentPlayer){
+case "one":
+p1x=95;
+p1y=100;
+break;
+case "two":
+p2x=120;
+p2y=100;
+break;
+case "three":
+p3x=95;
+p3y=75;
+break;
+case "four":
+p4x=120;
+p4y=75;
+break;
+}
+}
+
+function extraTurn(){
+switch (currentPlayer){
+case "one":
+extraTurn1();
+break;
+case "two":
+extraTurn2();
+break;
+case "three":
+extraTurn3();
+break;
+case "four":
+extraTurn4();
+break;
+}
+}
+
+function extraTurn1(){
+alert(anotherTurn+ '' +Player1+' !')
+currentPlayer="four";
+document.current.player.value="four";
+document.images['currentplayer'].src="player4.gif";
+}
+function extraTurn2(){
+alert(anotherTurn+ '' +Player2+' !')
+currentPlayer="one";
+document.current.player.value="one";
+document.images['currentplayer'].src="player1.gif";
+}
+
+function extraTurn3(){
+alert(anotherTurn+ '' +Player3+' !')
+currentPlayer="two";
+document.current.player.value="two";
+document.images['currentplayer'].src="player2.gif";
+}
+
+function extraTurn4(){
+alert(anotherTurn+ '' +Player4+' !')
+currentPlayer="three";
+document.current.player.value="three";
+document.images['currentplayer'].src="player3.gif";
+}
+
+//When the student answers a question incorrectly
+
+function snakes(){
+startOver();
+var snake=1;
+var currentx=whichX();
+var currenty=whichY();
+if(goOnMoving==true){
+if(currentx==155||currentx==180){
+if(currenty==400||currenty==375){
+snakeOne();
+snake=0;
+}
+}
+if(currentx==335||currentx==360){
+if(currenty==340||currenty==315){
+snakeTwo();
+snake=0;
+}
+}
+if(currentx==395||currentx==420){
+if(currenty==100||currenty==75){
+snakeThree();
+snake=0;
+}
+}
+if(currentx==155||currentx==180){
+if(currenty==100||currenty==75){
+snakeFour();
+snake=0;
+}
+}
+if(snake==1)
+goBackCapa();
+}
+}
+
+
+function stayPut(){
+showPlayer(currentPlayer);
+goOnMoving=false;
+changePlayer();
+}
+
+function startOver(){
+var currentx=whichX();
+var currenty=whichY();
+if(currentx==35||currentx==60){
+if(currenty==460||currenty==435){
+toFirstSquare()
+}
+}
+if(currentx==335||currentx==360){
+if(currenty==100||currenty==75){
+toFirstSquare()
+}
+}
+if(currentx==335||currentx==360){
+if(currenty==220||currenty==195){
+toFirstSquare()
+}
+}
+if(currentx==215||currentx==240){
+if(currenty==160||currenty==135){
+toFirstSquare()
+}
+}
+}
+
+function snakeOne(){
+switch (currentPlayer){
+case "one":
+p1x=275;
+p1y=520;
+break;
+case "two":
+p2x=300;
+p2y=520;
+break;
+case "three":
+p3x=275;
+p3y=495;
+break;
+case "four":
+p4x=300;
+p4y=495;
+break;
+}
+stayPut();
+}
+
+function snakeTwo(){
+switch (currentPlayer){
+case "one":
+p1x=455;
+p1y=520;
+break;
+case "two":
+p2x=480;
+p2y=520;
+break;
+case "three":
+p3x=455;
+p3y=495;
+break;
+case "four":
+p4x=480;
+p4y=495;
+break;
+}
+stayPut();
+}
+
+function snakeThree(){
+switch (currentPlayer){
+case "one":
+p1x=455;
+p1y=220;
+break;
+case "two":
+p2x=480;
+p2y=220;
+break;
+case "three":
+p3x=455;
+p3y=195;
+break;
+case "four":
+p4x=480;
+p4y=195;
+break;
+}
+stayPut();
+}
+
+function snakeFour(){
+switch (currentPlayer){
+case "one":
+p1x=35;
+p1y=340;
+break;
+case "two":
+p2x=60;
+p2y=340;
+break;
+case "three":
+p3x=35;
+p3y=315;
+break;
+case "four":
+p4x=60;
+p4y=315;
+break;
+}
+stayPut();
+}
+
+function toFirstSquare(){
+switch (currentPlayer){
+case "one":
+p1x=35;
+p1y=520;
+break;
+case "two":
+p2x=60;
+p2y=520;
+break;
+case "three":
+p3x=35;
+p3y=495;
+break;
+case "four":
+p4x=60;
+p4y=495;
+break;
+}
+stayPut();
+}
+
+function goBackCapa(){
+var currenty=whichY();
+if(currenty==520||currenty==400||currenty==280||currenty==160||currenty==495||currenty==375||currenty==255||currenty==135)
+goBackCapaLeft()
+else
+goBackCapaRight()
+}
+
+function goBackCapaRight(){
+var currentx=whichX();
+if(currentx<455){
+moveforward();
+}
+else{
+movedown();
+}
+showPlayer(currentPlayer);
+headback--;
+if(headback>0){
+setTimeout("goBackCapa()", 150);
+}
+else
+stayPut();
+}
+
+function goBackCapaLeft(){
+var currentx=whichX();
+if(currentx>94){
+moveback();
+}
+else{
+movedown();
+}
+showPlayer(currentPlayer);
+headback--;
+if(headback>0){
+setTimeout("goBackCapa()", 150);
+}
+else
+stayPut();
+}
+
+//Sets the number of players
+
+function howManyPlayers(n){
+capaON("one")
+Player1=prompt(ask4Name+player+'1',player+'1')
+if(n>=2){
+capaON("two")
+Player2=prompt(ask4Name+player+'2',player+'2')}
+else{
+capaOFF("two")
+}
+if(n>=3){
+capaON("three")
+Player3=prompt(ask4Name+player+'3',player+'3')}
+else{
+capaOFF("three")
+}
+if(n>=4){
+capaON("four")
+Player4=prompt(ask4Name+player+'4',player+'4')}
+else{
+capaOFF("four")
+}
+capaON("dice")
+numPlayers=n;
+}
+
+//Dice Roller Script by Brian Gosselin http://scriptasylum.com/games/dice/dice.html
+//I have modified it so it works with just one die instead of two
+
+var images=new Array();
+for(i=0;i<=6;i++){
+images[i]=new Image(); images[i].src='dice'+i+'.gif';
+}
+
+function rolldice(){
+if(answered==0){
+remindPlayer();
+}
+else{
+document.f.t.value='';
+document.f.b.value= rollingDice;
+if(ctr<6){
+showdice();
+ctr++;
+setTimeout('rolldice()',150);
+}else{
+ctr=0;
+showdice();
+document.f.t.value=d1;
+document.f.b.value= pleaseRoll;
+goOnMoving=true;
+possibleWinner=false;
+mouCapa();
+}
+}
+}
+
+function showdice(){
+d1=Math.floor(Math.random()*6+1);
+headback=d1;
+document.images['d1'].src='dice'+d1+'.gif';
+}
+
+//This part of the script deals with the questions
+//It is based on an example of an online test which can be found in O'Reilly's JavaScript Application Cookbook http://www.oreilly.com/catalog/jscook/
+
+function shuffle() {
+for (var i = 0; i < units.length; i++) {
+var j = Math.floor(Math.random() * units.length);
+var tempUnit = units[i];
+units[i] = units[j];
+units[j] = tempUnit;
+}
+}
+
+function buildQuestion() {
+nextQ = '<form><B>' + units[qIdx].question + '</B><BR><BR>' + 
+'<input type="radio" value="a" onclick="gradeTesta()">' + units[qIdx].a + '<BR>' +
+'<input type="radio" value="b" onclick="gradeTestb()">' + units[qIdx].b + '<BR>' +
+'<input type="radio" value="c" onclick="gradeTestc()">' + units[qIdx].c + '<BR>' +
+'<input type="radio" value="d" onclick="gradeTestd()">' + units[qIdx].d + '</FORM>';
+qIdx++;
+writetolayer('questions',nextQ)
+answered=0;
+}
+	
+function gradeTesta() {
+if (units[qIdx-1].answer == "a") 
+{
+congratulatePlayer();
+ladders();
+}
+else{
+sorry();
+snakes();
+}
+answered=1;
+}
+		
+function gradeTestb() {
+if (units[qIdx-1].answer == "b")
+{
+congratulatePlayer();
+ladders();
+}
+else{
+sorry();
+snakes();
+}
+answered=1;
+}
+	   
+function gradeTestc() {
+if (units[qIdx-1].answer == "c")
+{
+congratulatePlayer();
+ladders();
+}
+else{
+sorry();
+snakes();
+}
+answered=1;
+}
+
+function gradeTestd() {
+if (units[qIdx-1].answer == "d")
+{
+congratulatePlayer();
+ladders();
+}
+else{
+sorry();
+snakes();
+}
+answered=1;
+}
+		
+function who(){
+if(currentPlayer=="one"){return Player1}
+if(currentPlayer=="two"){return Player2}
+if(currentPlayer=="three"){return Player3}
+if(currentPlayer=="four"){return Player4}
+}
+function congratulatePlayer(){
+writetolayer('questions','<h2 align="center">'+wellDone+'<br>'+who()+'!</h2>')
+}
+
+function remindPlayer(){
+alert(pleaseAnswer+who())
+
+}
+
+function sorry(){
+writetolayer('questions',sorryMsg+'<br>'+(units[qIdx-1].support));
+}
+
+</script>
+</head>
+
+<body bgcolor="#FFFFFF" text="#000000" onload="shuffle()">
+<div id="players">
+<script language="JavaScript">
+document.write('<form name="current"><input type="hidden" name="player" value="one"><center><br>');
+document.write(currentPlayerHeading);
+document.write('<img name="currentplayer" src="player1.gif"></center></form>');
+</script>
+</div>
+<div id="board"><img src="board.gif" width="500" height="536"></div>
+<div id="one"><img src="player1.gif" width="22" height="23"></div>
+<div id="two"><img src="player2.gif" width="22" height="23"></div>
+<div id="three"><img src="player3.gif" width="22" height="23"></div>
+<div id="four"><img src="player4.gif" width="22" height="23"></div>
+<div id="instructions">
+<script language="JavaScript">
+document.write(instructions+'<br><br><input type="button" value="'+startGame+'" onClick="capaOFF(\'instructions\')"></form></p>')
+</script>
+</div>
+<div id="questions">
+<script language="JavaScript">
+document.writeln('<form><center><br>'+howMany+'</center><br>');
+document.writeln('<input type="radio" onclick="howManyPlayers(1)"> 1 ' +player+ '<BR>');
+document.writeln('<input type="radio" onclick="howManyPlayers(2)"> 2 '+players+'<BR>');
+document.writeln('<input type="radio" onclick="howManyPlayers(3)"> 3 '+players+'<BR>');
+document.writeln('<input type="radio" onclick="howManyPlayers(4)"> 4 '+players+'<BR></FORM>');
+</script>
+</div>
+<div id="dice">
+<script language="JavaScript">
+document.writeln('<table width="200" border="0"><tr><td><form name="f"><center><img src="dice1.gif" name="d1"><br>');
+document.writeln('<input type="hidden" size="2" value="" name="t" readonly onClick="document.f.b.focus()" onSelect="document.f.b.focus()"><br>');
+document.writeln('<input type="button" name="b" value="'+pleaseRoll+'" onClick="rolldice()"><br><br>');
+document.writeln('<input type="button" value="'+seeInstructions+'" onClick="capaON(\'instructions\')"></center></form></td></tr></table>');
+</script>
+</div>
+<script language="JavaScript">
+var currentPlayer=document.current.player.value;
+
+function changePlayer(){
+if (currentPlayer=="one" && numPlayers>1)
+{currentPlayer="two";
+document.current.player.value=currentPlayer;
+document.images['currentplayer'].src="player2.gif";}
+else{
+if (currentPlayer=="two" && numPlayers>2)
+{currentPlayer="three";
+document.current.player.value=currentPlayer;
+document.images['currentplayer'].src="player3.gif";}
+else{
+if (currentPlayer=="three" && numPlayers>3)
+{currentPlayer="four";
+document.current.player.value=currentPlayer;
+document.images['currentplayer'].src="player4.gif";}
+else{
+currentPlayer="one";
+document.current.player.value=currentPlayer;
+document.images['currentplayer'].src="player1.gif";
+}
+}
+}
+}
+</script>
+</body>
+</html>
